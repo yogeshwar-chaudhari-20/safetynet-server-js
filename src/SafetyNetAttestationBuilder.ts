@@ -8,6 +8,7 @@ import {
   SNAAttestOptions,
   SNATokenComponents,
   SNACert,
+  SNACertChainVerifierOptions,
   SNAFeatureFlags,
 } from "./safetyNetAttestation/sna.types";
 
@@ -19,6 +20,7 @@ export class SafetyNetAttestationBuilder {
   private _attestationToken!: string;
   private _tokenComponents!: SNATokenComponents;
   private _certChain: SNACert[] = [];
+  private _rootCert!: string;
   private _featureFlags!: SNAFeatureFlags;
 
   constructor() {
@@ -27,7 +29,7 @@ export class SafetyNetAttestationBuilder {
 
   public reset() {
     logger.info("Builder is reset");
-    this._featureFlags = { verifyHostName: false };
+    this._featureFlags = { verifyHostName: false, verifyCertChain: false };
     this._safetyNetAttestation = undefined;
   }
 
@@ -43,10 +45,17 @@ export class SafetyNetAttestationBuilder {
     return this;
   }
 
+  public setCertChainVerifier(options: SNACertChainVerifierOptions) {
+    this._rootCert = options.rootCert;
+    this._featureFlags.verifyCertChain = true;
+    return this;
+  }
+
   public build(): AttestationProviderBase {
     const options: SNAAttestOptions = {
       featureFlags: this._featureFlags,
       certChain: this._certChain,
+      rootCert: this._rootCert,
       attestationToken: this._attestationToken,
     };
 
