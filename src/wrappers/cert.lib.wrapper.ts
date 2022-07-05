@@ -1,7 +1,7 @@
 import pkg from "node-forge";
 const { pki } = pkg;
 import JWT from "jsonwebtoken";
-import { SNACert } from "../SafetyNetAttestationBuilder";
+import { SNACert } from "../safetyNetAttestation/sna.types";
 
 export function getCertificateHost(cert: SNACert) {
   return cert.subject.getField("CN").value;
@@ -29,6 +29,7 @@ export function base64toPem(certString: string) {
  * @param header decoded header string from the attestation token
  * @returns list of SNACert objects
  */
+
 // TODO: Replace the type with SNATokenComponents.header
 export const extractCertChain = (header: JWT.JwtHeader) => {
   const sslCertChain: SNACert[] = [];

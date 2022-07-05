@@ -1,5 +1,5 @@
 import JWT from "jsonwebtoken";
-import { SNATokenComponents } from "../SafetyNetAttestationBuilder";
+import { SNATokenComponents } from "../safetyNetAttestation/sna.types";
 
 const extractJWTComponets = (jwtToken: string) => {
   const decodedJWT = JWT.decode(jwtToken, {

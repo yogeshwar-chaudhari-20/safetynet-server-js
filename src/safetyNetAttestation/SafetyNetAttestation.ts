@@ -1,11 +1,11 @@
 import { AttestationProviderBase } from "../AttestationProviderBase";
 import { Logger } from "sitka";
 import {
-  AttestOptions,
-  FeatureFlags,
+  SNAAttestOptions,
+  SNAFeatureFlags,
   SNACert,
   SNATokenComponents,
-} from "../SafetyNetAttestationBuilder";
+} from "./sna.types";
 import { getCertificateHost } from "../wrappers/cert.lib.wrapper";
 import { InvalidLeafCertHostNameError } from "../errors/SNAErrors";
 
@@ -14,9 +14,9 @@ const logger: Logger = Logger.getLogger({ name: "SafetyNetAttestation" });
 export class SafetyNetAttestation extends AttestationProviderBase {
   private _tokenComponents!: SNATokenComponents;
   private _certChain!: SNACert[];
-  private _featureFlags!: FeatureFlags;
+  private _featureFlags!: SNAFeatureFlags;
 
-  constructor(options: AttestOptions) {
+  constructor(options: SNAAttestOptions) {
     super();
     this._attestationToken = options.attestationToken;
     this._certChain = options.certChain;
@@ -65,7 +65,7 @@ export class SafetyNetAttestation extends AttestationProviderBase {
     this._tokenComponents = comps;
   }
 
-  setFeatureFlags(flags: FeatureFlags) {
+  setFeatureFlags(flags: SNAFeatureFlags) {
     this._featureFlags = flags;
   }
 }

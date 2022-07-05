@@ -1,35 +1,25 @@
 import { AttestationProviderBase } from "./AttestationProviderBase";
 import { SafetyNetAttestation } from "./safetyNetAttestation/SafetyNetAttestation";
-import JWT from "jsonwebtoken";
-import pkg from "node-forge";
 
 import { Logger } from "sitka";
 import jwtWrapper from "./wrappers/jwt.wrapper";
 import { extractCertChain } from "./wrappers/cert.lib.wrapper";
+import {
+  SNAAttestOptions,
+  SNATokenComponents,
+  SNACert,
+  SNAFeatureFlags,
+} from "./safetyNetAttestation/sna.types";
 
 const logger: Logger = Logger.getLogger({
   name: "SafetyNetAttestationBuilder",
 });
-
-export type SNATokenComponents = JWT.Jwt | null;
-export type SNACert = pkg.pki.Certificate;
-
-export interface FeatureFlags {
-  verifyHostName: boolean | true;
-}
-
-export type AttestOptions = {
-  attestationToken: string;
-  certChain: SNACert[];
-  featureFlags: FeatureFlags;
-};
-
 export class SafetyNetAttestationBuilder {
   private _safetyNetAttestation!: SafetyNetAttestation | undefined;
   private _attestationToken!: string;
   private _tokenComponents!: SNATokenComponents;
   private _certChain: SNACert[] = [];
-  private _featureFlags!: FeatureFlags;
+  private _featureFlags!: SNAFeatureFlags;
 
   constructor() {
     this.reset();
@@ -54,7 +44,7 @@ export class SafetyNetAttestationBuilder {
   }
 
   public build(): AttestationProviderBase {
-    const options: AttestOptions = {
+    const options: SNAAttestOptions = {
       featureFlags: this._featureFlags,
       certChain: this._certChain,
       attestationToken: this._attestationToken,
