@@ -32,3 +32,10 @@ export class InvalidLeafCertHostNameError extends BaseError {
     this.name = this.constructor.name;
   }
 }
+
+export class InvalidCertificateChainError extends BaseError {
+  constructor(message: string, reason?: string, solution?: string, err?: any) {
+    super(message, reason, solution, err);
+    this.name = this.constructor.name;
+  }
+}
