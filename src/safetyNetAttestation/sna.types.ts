@@ -4,18 +4,31 @@ import JWT from "jsonwebtoken";
 export interface SNAFeatureFlags {
   verifyHostName: boolean | true;
   verifyCertChain: boolean | true;
+  verifyPayloadTimestamp: boolean | true;
 }
 
-export type SNATokenComponents = JWT.Jwt | null;
+export type SNATokenComponents = {
+  header: JWT.JwtHeader;
+  payload: JWT.JwtPayload;
+  signature: string;
+};
+
 export type SNACert = pkg.pki.Certificate;
 export type SNACaStore = pkg.pki.CAStore;
+
 export type SNACertChainVerifierOptions = {
   rootCert: string;
 };
 
+export type SNATimestampVerifierOptions = {
+  diffInMins: number;
+};
+
 export type SNAAttestOptions = {
   attestationToken: string;
+  tokenComponents: SNATokenComponents;
   certChain: SNACert[];
   rootCert: string;
+  timestampVerifierOptions: SNATimestampVerifierOptions | undefined;
   featureFlags: SNAFeatureFlags;
 };
