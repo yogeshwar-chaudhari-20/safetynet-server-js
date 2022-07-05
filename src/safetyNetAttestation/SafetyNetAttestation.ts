@@ -5,6 +5,7 @@ import {
   SNAFeatureFlags,
   SNACert,
   SNATokenComponents,
+  SNATimestampVerifierOptions,
 } from "./sna.types";
 import {
   certificateFromPem,
@@ -15,20 +16,29 @@ import {
 import {
   InvalidCertificateChainError,
   InvalidLeafCertHostNameError,
+  PayloadTimeStampOutOfLimitError,
 } from "../errors/SNAErrors";
+import { getPayloadTimestamp } from "../wrappers/jwt.wrapper";
+import {
+  convertMsToMinutes,
+  getTimestampDiffInMs,
+} from "../wrappers/date.wrapper";
 
 const logger: Logger = Logger.getLogger({ name: "SafetyNetAttestation" });
 
 export class SafetyNetAttestation extends AttestationProviderBase {
   private _tokenComponents!: SNATokenComponents;
   private _certChain!: SNACert[];
+  private _timestampVerifierOptions!: SNATimestampVerifierOptions | undefined;
   private _featureFlags!: SNAFeatureFlags;
 
   constructor(options: SNAAttestOptions) {
     super();
     this._attestationToken = options.attestationToken;
+    this._tokenComponents = options.tokenComponents;
     this._certChain = options.certChain;
     this._rootCert = options.rootCert;
+    this._timestampVerifierOptions = options.timestampVerifierOptions;
     this._featureFlags = options.featureFlags;
     logger.info("SafetyNetAttestation Created");
   }
@@ -60,6 +70,7 @@ export class SafetyNetAttestation extends AttestationProviderBase {
    * @returns returns true certificate chain can be verified.
    * @throws InvalidLeafCertHostNameError
    */
+
   public verifyCertChain() {
     logger.info("Verifying certificate chain with root certificate");
 
@@ -80,10 +91,42 @@ export class SafetyNetAttestation extends AttestationProviderBase {
     return isChainValid;
   }
 
+  /**
+   * Verifies if the difference between payload timestamp and current timestamp is <= acceptable diff in minutes.
+   * @returns true if diffence is within acceptable range, false otherwise
+   * @throws PayloadTimeStampOutOfLimitError
+   */
+
+  public verifyPayloadTimeStamp() {
+    logger.info("Verifying payoad timestamp");
+
+    const timestampMs = getPayloadTimestamp(this._tokenComponents);
+    const actualDiffInMinutes = convertMsToMinutes(
+      getTimestampDiffInMs(Number(timestampMs))
+    );
+
+    const isDiffInLimit =
+      actualDiffInMinutes <= this._timestampVerifierOptions!.diffInMins;
+
+    if (!isDiffInLimit) {
+      logger.error("Payload timestamp verification failed");
+      throw new PayloadTimeStampOutOfLimitError(
+        `Error Occured while verifying the PayloadTimeStamp ${actualDiffInMinutes}`,
+        `(Payload timestamp - current timestamp) > diffInMins`,
+        `Try using new attestation token or increasing 'diffInMins' option`
+      );
+    }
+
+    return isDiffInLimit;
+  }
+
   performAttestation() {
     if (this._featureFlags.verifyHostName) this.verifyHostName();
 
     if (this._featureFlags.verifyCertChain) this.verifyCertChain();
+
+    if (this._featureFlags.verifyPayloadTimestamp)
+      this.verifyPayloadTimeStamp();
   }
 
   getDeviceIntegrity(): boolean {

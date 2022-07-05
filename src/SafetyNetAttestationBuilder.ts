@@ -9,6 +9,7 @@ import {
   SNATokenComponents,
   SNACert,
   SNACertChainVerifierOptions,
+  SNATimestampVerifierOptions,
   SNAFeatureFlags,
 } from "./safetyNetAttestation/sna.types";
 
@@ -21,6 +22,7 @@ export class SafetyNetAttestationBuilder {
   private _tokenComponents!: SNATokenComponents;
   private _certChain: SNACert[] = [];
   private _rootCert!: string;
+  private _timestampVerifierOptions: SNATimestampVerifierOptions | undefined;
   private _featureFlags!: SNAFeatureFlags;
 
   constructor() {
@@ -29,7 +31,11 @@ export class SafetyNetAttestationBuilder {
 
   public reset() {
     logger.info("Builder is reset");
-    this._featureFlags = { verifyHostName: false, verifyCertChain: false };
+    this._featureFlags = {
+      verifyHostName: false,
+      verifyCertChain: false,
+      verifyPayloadTimestamp: false,
+    };
     this._safetyNetAttestation = undefined;
   }
 
@@ -51,12 +57,20 @@ export class SafetyNetAttestationBuilder {
     return this;
   }
 
+  public setPayloadTimestampVerifier(options: SNATimestampVerifierOptions) {
+    this._timestampVerifierOptions = options;
+    this._featureFlags.verifyPayloadTimestamp = true;
+    return this;
+  }
+
   public build(): AttestationProviderBase {
     const options: SNAAttestOptions = {
       featureFlags: this._featureFlags,
       certChain: this._certChain,
       rootCert: this._rootCert,
+      timestampVerifierOptions: this._timestampVerifierOptions,
       attestationToken: this._attestationToken,
+      tokenComponents: this._tokenComponents,
     };
 
     this._safetyNetAttestation = new SafetyNetAttestation(options);
