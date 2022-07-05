@@ -13,4 +13,8 @@ const extractJWTComponets = (jwtToken: string) => {
   return decodedJWT as SNATokenComponents;
 };
 
+export const getPayloadTimestamp = (jwtToken: SNATokenComponents): string => {
+  return jwtToken.payload.timestampMs;
+};
+
 export default { extractJWTComponets };
