@@ -2,13 +2,24 @@ import { AttestationProviderBase } from "./AttestationProviderBase";
 import { SafetyNetAttestation } from "./safetyNetAttestation/SafetyNetAttestation";
 
 import { Logger } from "sitka";
+import jwtWrapper from "./wrappers/jwt.wrapper";
+import { extractCertChain } from "./wrappers/cert.lib.wrapper";
+import {
+  SNAAttestOptions,
+  SNATokenComponents,
+  SNACert,
+  SNAFeatureFlags,
+} from "./safetyNetAttestation/sna.types";
 
 const logger: Logger = Logger.getLogger({
   name: "SafetyNetAttestationBuilder",
 });
-
 export class SafetyNetAttestationBuilder {
-  private _safetyNetAttestation!: SafetyNetAttestation;
+  private _safetyNetAttestation!: SafetyNetAttestation | undefined;
+  private _attestationToken!: string;
+  private _tokenComponents!: SNATokenComponents;
+  private _certChain: SNACert[] = [];
+  private _featureFlags!: SNAFeatureFlags;
 
   constructor() {
     this.reset();
@@ -16,11 +27,30 @@ export class SafetyNetAttestationBuilder {
 
   public reset() {
     logger.info("Builder is reset");
-    this._safetyNetAttestation = new SafetyNetAttestation();
+    this._featureFlags = { verifyHostName: false };
+    this._safetyNetAttestation = undefined;
+  }
+
+  public setAttestationToken(token: string) {
+    this._tokenComponents = jwtWrapper.extractJWTComponets(token);
+    this._attestationToken = token;
+    return this;
+  }
+
+  public setHostVerifier() {
+    this._certChain = extractCertChain(this._tokenComponents!.header!);
+    this._featureFlags.verifyHostName = true;
+    return this;
   }
 
   public build(): AttestationProviderBase {
-    this._safetyNetAttestation = new SafetyNetAttestation();
+    const options: SNAAttestOptions = {
+      featureFlags: this._featureFlags,
+      certChain: this._certChain,
+      attestationToken: this._attestationToken,
+    };
+
+    this._safetyNetAttestation = new SafetyNetAttestation(options);
     return this._safetyNetAttestation;
   }
 }
