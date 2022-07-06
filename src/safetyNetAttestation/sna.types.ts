@@ -5,6 +5,7 @@ export interface SNAFeatureFlags {
   verifyHostName: boolean | true;
   verifyCertChain: boolean | true;
   verifyPayloadTimestamp: boolean | true;
+  verifyApkPackageName: boolean | true;
 }
 
 export type SNATokenComponents = {
@@ -30,5 +31,6 @@ export type SNAAttestOptions = {
   certChain: SNACert[];
   rootCert: string;
   timestampVerifierOptions: SNATimestampVerifierOptions | undefined;
+  apkPackageName: string;
   featureFlags: SNAFeatureFlags;
 };
