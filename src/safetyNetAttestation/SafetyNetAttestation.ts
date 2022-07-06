@@ -16,9 +16,10 @@ import {
 import {
   InvalidCertificateChainError,
   InvalidLeafCertHostNameError,
+  PackageNameMismatchError,
   PayloadTimeStampOutOfLimitError,
 } from "../errors/SNAErrors";
-import { getPayloadTimestamp } from "../wrappers/jwt.wrapper";
+import { getPackageName, getPayloadTimestamp } from "../wrappers/jwt.wrapper";
 import {
   convertMsToMinutes,
   getTimestampDiffInMs,
@@ -30,6 +31,7 @@ export class SafetyNetAttestation extends AttestationProviderBase {
   private _tokenComponents!: SNATokenComponents;
   private _certChain!: SNACert[];
   private _timestampVerifierOptions!: SNATimestampVerifierOptions | undefined;
+  private _apkPackageName!: string;
   private _featureFlags!: SNAFeatureFlags;
 
   constructor(options: SNAAttestOptions) {
@@ -39,6 +41,7 @@ export class SafetyNetAttestation extends AttestationProviderBase {
     this._certChain = options.certChain;
     this._rootCert = options.rootCert;
     this._timestampVerifierOptions = options.timestampVerifierOptions;
+    this._apkPackageName = options.apkPackageName;
     this._featureFlags = options.featureFlags;
     logger.info("SafetyNetAttestation Created");
   }
@@ -120,6 +123,27 @@ export class SafetyNetAttestation extends AttestationProviderBase {
     return isDiffInLimit;
   }
 
+  /**
+   * Verifies that the package name in the payload matches with the provided package name.
+   * @returns true if payload.apkPackageName == packageName, false otherwise
+   * @throws PackageNameMismatchError
+   */
+  public verifyApkPackageName() {
+    logger.info("Verifying payload package name");
+
+    const isPkgMatch =
+      this._apkPackageName === getPackageName(this._tokenComponents);
+
+    if (!isPkgMatch) {
+      logger.error(
+        "Package name in payload does not match the expected package name."
+      );
+      throw new PackageNameMismatchError("Package name does not match");
+    }
+
+    return true;
+  }
+
   performAttestation() {
     if (this._featureFlags.verifyHostName) this.verifyHostName();
 
@@ -127,6 +151,8 @@ export class SafetyNetAttestation extends AttestationProviderBase {
 
     if (this._featureFlags.verifyPayloadTimestamp)
       this.verifyPayloadTimeStamp();
+
+    if (this._featureFlags.verifyApkPackageName) this.verifyApkPackageName();
   }
 
   getDeviceIntegrity(): boolean {

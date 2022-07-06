@@ -23,6 +23,7 @@ export class SafetyNetAttestationBuilder {
   private _certChain: SNACert[] = [];
   private _rootCert!: string;
   private _timestampVerifierOptions: SNATimestampVerifierOptions | undefined;
+  private _apkPackageName!: string;
   private _featureFlags!: SNAFeatureFlags;
 
   constructor() {
@@ -35,6 +36,7 @@ export class SafetyNetAttestationBuilder {
       verifyHostName: false,
       verifyCertChain: false,
       verifyPayloadTimestamp: false,
+      verifyApkPackageName: false,
     };
     this._safetyNetAttestation = undefined;
   }
@@ -63,12 +65,19 @@ export class SafetyNetAttestationBuilder {
     return this;
   }
 
+  public setApkPackageNameVerifier(apkPackageName: string) {
+    this._apkPackageName = apkPackageName;
+    this._featureFlags.verifyApkPackageName = true;
+    return this;
+  }
+
   public build(): AttestationProviderBase {
     const options: SNAAttestOptions = {
       featureFlags: this._featureFlags,
       certChain: this._certChain,
       rootCert: this._rootCert,
       timestampVerifierOptions: this._timestampVerifierOptions,
+      apkPackageName: this._apkPackageName,
       attestationToken: this._attestationToken,
       tokenComponents: this._tokenComponents,
     };
