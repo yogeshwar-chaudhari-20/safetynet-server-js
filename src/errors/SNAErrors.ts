@@ -39,3 +39,17 @@ export class InvalidCertificateChainError extends BaseError {
     this.name = this.constructor.name;
   }
 }
+
+export class PayloadTimeStampOutOfLimitError extends BaseError {
+  constructor(message: string, reason?: string, solution?: string, err?: any) {
+    super(message, reason, solution, err);
+    this.name = this.constructor.name;
+  }
+}
+
+export class PackageNameMismatchError extends BaseError {
+  constructor(message: string, reason?: string, solution?: string, err?: any) {
+    super(message, reason, solution, err);
+    this.name = this.constructor.name;
+  }
+}
