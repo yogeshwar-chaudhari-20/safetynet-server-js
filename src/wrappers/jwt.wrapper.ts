@@ -13,8 +13,14 @@ const extractJWTComponets = (jwtToken: string) => {
   return decodedJWT as SNATokenComponents;
 };
 
+// TODO: Replace this with getPayloadFieldValue(jwtToken: SNATokenComponents, fieldName: string)
 export const getPayloadTimestamp = (jwtToken: SNATokenComponents): string => {
   return jwtToken.payload.timestampMs;
+};
+
+// TODO: Replace this with getPayloadFieldValue(jwtToken: SNATokenComponents, fieldName: string)
+export const getPackageName = (jwtToken: SNATokenComponents): string => {
+  return jwtToken.payload.apkPackageName;
 };
 
 export default { extractJWTComponets };
