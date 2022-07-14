@@ -4,6 +4,7 @@ import JWT from "jsonwebtoken";
 export interface SNAFeatureFlags {
   verifyHostName: boolean | true;
   verifyCertChain: boolean | true;
+  verifyNonce: boolean | true;
   verifyPayloadTimestamp: boolean | true;
   verifyApkPackageName: boolean | true;
 }
@@ -21,6 +22,12 @@ export type SNACertChainVerifierOptions = {
   rootCert: string;
 };
 
+export type SNANonceVerificationOptions = {
+  generatedNonce: string;
+  secret: string;
+  originalData: Record<string, unknown>;
+};
+
 export type SNATimestampVerifierOptions = {
   diffInMins: number;
 };
@@ -30,6 +37,7 @@ export type SNAAttestOptions = {
   tokenComponents: SNATokenComponents;
   certChain: SNACert[];
   rootCert: string;
+  nonceVerificationOptions: SNANonceVerificationOptions;
   timestampVerifierOptions: SNATimestampVerifierOptions | undefined;
   apkPackageName: string;
   featureFlags: SNAFeatureFlags;
