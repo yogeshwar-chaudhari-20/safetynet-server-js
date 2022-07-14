@@ -53,3 +53,10 @@ export class PackageNameMismatchError extends BaseError {
     this.name = this.constructor.name;
   }
 }
+
+export class InvalidNonceError extends BaseError {
+  constructor(message: string, reason?: string, solution?: string, err?: any) {
+    super(message, reason, solution, err);
+    this.name = this.constructor.name;
+  }
+}

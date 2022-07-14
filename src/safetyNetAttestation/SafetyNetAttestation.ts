@@ -6,6 +6,7 @@ import {
   SNACert,
   SNATokenComponents,
   SNATimestampVerifierOptions,
+  SNANonceVerificationOptions,
 } from "./sna.types";
 import {
   certificateFromPem,
@@ -16,6 +17,7 @@ import {
 import {
   InvalidCertificateChainError,
   InvalidLeafCertHostNameError,
+  InvalidNonceError,
   PackageNameMismatchError,
   PayloadTimeStampOutOfLimitError,
 } from "../errors/SNAErrors";
@@ -24,12 +26,14 @@ import {
   convertMsToMinutes,
   getTimestampDiffInMs,
 } from "../wrappers/date.wrapper";
+import { Nonce } from "../nonce/Nonce";
 
 const logger: Logger = Logger.getLogger({ name: "SafetyNetAttestation" });
 
 export class SafetyNetAttestation extends AttestationProviderBase {
   private _tokenComponents!: SNATokenComponents;
   private _certChain!: SNACert[];
+  private _nonceVerificationOptions!: SNANonceVerificationOptions;
   private _timestampVerifierOptions!: SNATimestampVerifierOptions | undefined;
   private _apkPackageName!: string;
   private _featureFlags!: SNAFeatureFlags;
@@ -40,6 +44,7 @@ export class SafetyNetAttestation extends AttestationProviderBase {
     this._tokenComponents = options.tokenComponents;
     this._certChain = options.certChain;
     this._rootCert = options.rootCert;
+    this._nonceVerificationOptions = options.nonceVerificationOptions;
     this._timestampVerifierOptions = options.timestampVerifierOptions;
     this._apkPackageName = options.apkPackageName;
     this._featureFlags = options.featureFlags;
@@ -92,6 +97,23 @@ export class SafetyNetAttestation extends AttestationProviderBase {
     }
 
     return isChainValid;
+  }
+
+  /**
+   * Verifies if the nonce in the attetsation payload matches the original nonce sent to SafetyNetAttestation API
+   * @returns true if the nonce matches the original nonce.
+   * @throws InvalidNonceError
+   */
+  public verifyNonce() {
+    const { generatedNonce, secret, originalData } =
+      this._nonceVerificationOptions;
+
+    const nonceVerifier = new Nonce(originalData, secret);
+    const isNonceValid = nonceVerifier.verify(generatedNonce);
+    if (!isNonceValid) {
+      logger.error("Nonce verification failed");
+      throw new InvalidNonceError("Nonce verification failed");
+    }
   }
 
   /**
