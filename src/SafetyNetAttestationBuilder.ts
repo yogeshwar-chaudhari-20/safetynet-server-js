@@ -9,6 +9,7 @@ import {
   SNATokenComponents,
   SNACert,
   SNACertChainVerifierOptions,
+  SNANonceVerificationOptions,
   SNATimestampVerifierOptions,
   SNAFeatureFlags,
 } from "./safetyNetAttestation/sna.types";
@@ -22,7 +23,8 @@ export class SafetyNetAttestationBuilder {
   private _tokenComponents!: SNATokenComponents;
   private _certChain: SNACert[] = [];
   private _rootCert!: string;
-  private _timestampVerifierOptions: SNATimestampVerifierOptions | undefined;
+  private _nonceVerificationOptions!: SNANonceVerificationOptions;
+  _timestampVerifierOptions: SNATimestampVerifierOptions | undefined;
   private _apkPackageName!: string;
   private _featureFlags!: SNAFeatureFlags;
 
@@ -35,6 +37,7 @@ export class SafetyNetAttestationBuilder {
     this._featureFlags = {
       verifyHostName: false,
       verifyCertChain: false,
+      verifyNonce: false,
       verifyPayloadTimestamp: false,
       verifyApkPackageName: false,
     };
@@ -59,6 +62,12 @@ export class SafetyNetAttestationBuilder {
     return this;
   }
 
+  public setNonceVerifier(options: SNANonceVerificationOptions) {
+    this._nonceVerificationOptions = options;
+    this._featureFlags.verifyNonce = true;
+    return this;
+  }
+
   public setPayloadTimestampVerifier(options: SNATimestampVerifierOptions) {
     this._timestampVerifierOptions = options;
     this._featureFlags.verifyPayloadTimestamp = true;
@@ -80,6 +89,7 @@ export class SafetyNetAttestationBuilder {
       apkPackageName: this._apkPackageName,
       attestationToken: this._attestationToken,
       tokenComponents: this._tokenComponents,
+      nonceVerificationOptions: this._nonceVerificationOptions,
     };
 
     this._safetyNetAttestation = new SafetyNetAttestation(options);
