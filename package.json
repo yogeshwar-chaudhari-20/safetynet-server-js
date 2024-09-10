@@ -23,6 +23,8 @@
     "dist/"
   ],
   "scripts": {
+    "start": "npx tsx src/index.ts",
+    "watch": "npx tsx watch src/index.ts",
     "build": "npm run clean && npm run lint && tsc",
     "changelog": "conventional-changelog -p angular -u",
     "changelog:update": "conventional-changelog -p angular -i CHANGELOG.md -s && git add CHANGELOG.md",
