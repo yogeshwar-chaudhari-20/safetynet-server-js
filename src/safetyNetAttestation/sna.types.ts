@@ -23,7 +23,6 @@ export type SNACertChainVerifierOptions = {
 };
 
 export type SNANonceVerificationOptions = {
-  generatedNonce: string;
   secret: string;
   originalData: Record<string, unknown>;
 };

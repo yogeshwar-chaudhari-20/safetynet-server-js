@@ -23,4 +23,9 @@ export const getPackageName = (jwtToken: SNATokenComponents): string => {
   return jwtToken.payload.apkPackageName;
 };
 
+// TODO: Replace this with getPayloadFieldValue(jwtToken: SNATokenComponents, fieldName: string)
+export const getNonce = (jwtToken: SNATokenComponents): string => {
+  return jwtToken.payload.nonce;
+};
+
 export default { extractJWTComponets };

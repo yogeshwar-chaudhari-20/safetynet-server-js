@@ -21,7 +21,11 @@ import {
   PackageNameMismatchError,
   PayloadTimeStampOutOfLimitError,
 } from "../errors/SNAErrors";
-import { getPackageName, getPayloadTimestamp } from "../wrappers/jwt.wrapper";
+import {
+  getPackageName,
+  getPayloadTimestamp,
+  getNonce,
+} from "../wrappers/jwt.wrapper";
 import {
   convertMsToMinutes,
   getTimestampDiffInMs,
@@ -105,11 +109,11 @@ export class SafetyNetAttestation extends AttestationProviderBase {
    * @throws InvalidNonceError
    */
   public verifyNonce() {
-    const { generatedNonce, secret, originalData } =
-      this._nonceVerificationOptions;
+    const receivedNonce = getNonce(this._tokenComponents);
+    const { secret, originalData } = this._nonceVerificationOptions;
 
     const nonceVerifier = new Nonce(originalData, secret);
-    const isNonceValid = nonceVerifier.verify(generatedNonce);
+    const isNonceValid = nonceVerifier.verify(receivedNonce);
     if (!isNonceValid) {
       logger.error("Nonce verification failed");
       throw new InvalidNonceError("Nonce verification failed");
@@ -175,11 +179,20 @@ export class SafetyNetAttestation extends AttestationProviderBase {
       this.verifyPayloadTimeStamp();
 
     if (this._featureFlags.verifyApkPackageName) this.verifyApkPackageName();
+
+    if (this._featureFlags.verifyNonce) this.verifyNonce();
+
+    return true;
   }
 
   getDeviceIntegrity(): boolean {
-    this.performAttestation();
-    return true;
+    try {
+      this.performAttestation();
+      return true;
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
   }
 
   get tokenComponents() {
