@@ -1,6 +1,6 @@
 {
   "name": "safetynet-server-js",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Cryptographically-signed attestation verification using Google's SafetyNet API, confirming various security properties of the device",
   "keywords": [
     "Android attestation API",
